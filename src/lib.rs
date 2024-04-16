@@ -15,6 +15,7 @@ mod mobile;
 mod commands;
 mod error;
 mod models;
+mod history;
 
 pub use error::{Error, Result};
 
