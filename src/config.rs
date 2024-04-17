@@ -31,29 +31,28 @@ where
 }
 
 #[derive(Default)]
-struct Config {
+pub struct Config {
     path: PathBuf,
     inner: InnerConfig,
 }
 
-#[derive(Deserialize, Serialize, Default)]
-struct InnerConfig {
+#[derive(Deserialize, Serialize, Default, Clone)]
+pub struct InnerConfig {
     browsers: Vec<Browser>,
 }
 
 impl Config {
-    fn new() -> Self {
-        Config::default()
-    }
-
-    fn init<P: AsRef<Path>>(&mut self, base: P) {
+    pub fn new<P: AsRef<Path>>(base: P) -> Self {
+        let mut config = Config::default();
         let mut path = PathBuf::new();
         path.push(base);
         path.push("plugins/history/config.json");
-        self.path = path.clone();
+        config.path = path.clone();
         if !path.exists() {
-            self.create()
+            config.create()
         }
+        config.load();
+        config
     }
 
     fn load(&mut self) {
@@ -74,6 +73,10 @@ impl Config {
         let config = InnerConfig { browsers };
         let _ = create_file(&self.path, &config);
     }
+
+    pub fn list(&self) -> InnerConfig {
+        self.inner.clone()
+    }
 }
 
 
@@ -82,7 +85,6 @@ mod tests {
 
     #[test]
     fn test_config() {
-        let mut config = Config::new();
-        config.init(std::env::current_dir().unwrap());
+        Config::new(std::env::current_dir().unwrap());
     }
 }

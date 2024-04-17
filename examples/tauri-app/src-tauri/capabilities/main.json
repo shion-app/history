@@ -1,0 +1,11 @@
+{
+    "$schema": "./schemas/desktop-schema.json",
+    "identifier": "main-capability",
+    "description": "Capability for the main window",
+    "windows": [
+        "main"
+    ],
+    "permissions": [
+        "shion-history:allow-get-config"
+    ]
+}

@@ -1,9 +1,8 @@
+use history::History;
 use tauri::{
     plugin::{Builder, TauriPlugin},
     Manager, Runtime,
 };
-
-use std::{collections::HashMap, sync::Mutex};
 
 pub use models::*;
 
@@ -26,8 +25,8 @@ use desktop::ShionHistory;
 #[cfg(mobile)]
 use mobile::ShionHistory;
 
-#[derive(Default)]
-struct MyState(Mutex<HashMap<String, String>>);
+// #[derive(Default)]
+struct MyState(History);
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the shion-history APIs.
 pub trait ShionHistoryExt<R: Runtime> {
@@ -43,7 +42,7 @@ impl<R: Runtime, T: Manager<R>> crate::ShionHistoryExt<R> for T {
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("shion-history")
-        .invoke_handler(tauri::generate_handler![commands::execute])
+        .invoke_handler(tauri::generate_handler![commands::get_config])
         .setup(|app, api| {
             #[cfg(mobile)]
             let shion_history = mobile::init(app, api)?;
@@ -51,8 +50,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             let shion_history = desktop::init(app, api)?;
             app.manage(shion_history);
 
-            // manage state so it is accessible by the commands
-            app.manage(MyState::default());
+            let base = app.app_handle().path().app_data_dir().unwrap();
+            let history = History::new(base);
+            app.manage(MyState(history));
             Ok(())
         })
         .build()

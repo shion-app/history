@@ -1,5 +1,9 @@
+use std::path::Path;
+
 use home::home_dir;
 use lazy_static::lazy_static;
+
+use crate::config::{Config, InnerConfig};
 
 #[derive(PartialEq, Clone)]
 enum Platform {
@@ -71,6 +75,21 @@ fn get_list() -> Vec<String> {
         }
     }
     list
+}
+
+pub struct History {
+    config: Config
+}
+
+impl History {
+    pub fn new<P: AsRef<Path>>(base: P) -> Self {
+        let config = Config::new(base);
+        Self { config }
+    }
+
+    pub fn get_config(&self) -> InnerConfig  {
+        self.config.list()
+    }
 }
 
 mod tests {

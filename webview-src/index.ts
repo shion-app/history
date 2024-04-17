@@ -1,5 +1,14 @@
 import { invoke } from '@tauri-apps/api/core'
 
-export async function execute() {
-  await invoke('plugin:shion-history|execute')
+interface Browser {
+  name: string,
+  last_sync: number,
+}
+
+interface Config {
+  browsers: Array<Browser>
+}
+
+export async function getConfig() {
+  return await invoke<Config>('plugin:shion-history|get_config')
 }

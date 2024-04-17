@@ -1,6 +1,6 @@
 <script>
   import Greet from './lib/Greet.svelte'
-  import { execute } from 'tauri-plugin-shion-history-api'
+  import { getConfig } from 'tauri-plugin-shion-history-api'
 
 	let response = ''
 
@@ -8,8 +8,9 @@
 		response += `[${new Date().toLocaleTimeString()}]` + (typeof returnValue === 'string' ? returnValue : JSON.stringify(returnValue)) + '<br>'
 	}
 
-	function _execute() {
-		execute().then(updateResponse).catch(updateResponse)
+	async function _execute() {
+    const config = await getConfig()
+		console.log(config);
 	}
 </script>
 
