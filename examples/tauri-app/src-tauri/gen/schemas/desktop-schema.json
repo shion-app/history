@@ -856,10 +856,24 @@
           ]
         },
         {
+          "description": "shion-history:allow-read-history -> Enables the read_history command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "shion-history:allow-read-history"
+          ]
+        },
+        {
           "description": "shion-history:deny-get-config -> Denies the get_config command without any pre-configured scope.",
           "type": "string",
           "enum": [
             "shion-history:deny-get-config"
+          ]
+        },
+        {
+          "description": "shion-history:deny-read-history -> Denies the read_history command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "shion-history:deny-read-history"
           ]
         },
         {

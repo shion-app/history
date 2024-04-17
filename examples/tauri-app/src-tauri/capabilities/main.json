@@ -6,6 +6,7 @@
         "main"
     ],
     "permissions": [
-        "shion-history:allow-get-config"
+        "shion-history:allow-get-config",
+        "shion-history:allow-read-history"
     ]
 }

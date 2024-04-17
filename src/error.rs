@@ -13,6 +13,9 @@ pub enum Error {
 
     #[error(transparent)]
     SerializeJSON(#[from] serde_json::Error),
+
+    #[error(transparent)]
+    Rusqlite(#[from] rusqlite::Error),
 }
 
 impl Serialize for Error {

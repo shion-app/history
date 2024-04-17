@@ -1,6 +1,6 @@
 <script>
   import Greet from './lib/Greet.svelte'
-  import { getConfig } from 'tauri-plugin-shion-history-api'
+  import { getConfig, readHistory } from 'tauri-plugin-shion-history-api'
 
 	let response = ''
 
@@ -9,8 +9,8 @@
 	}
 
 	async function _execute() {
-    const config = await getConfig()
-		console.log(config);
+		console.log(await getConfig());
+		console.log(await readHistory(["Microsoft Edge"], 1713283200000, 1713330000000));
 	}
 </script>
 

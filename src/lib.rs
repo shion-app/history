@@ -1,3 +1,5 @@
+use std::sync::Mutex;
+
 use history::History;
 use tauri::{
     plugin::{Builder, TauriPlugin},
@@ -17,6 +19,7 @@ mod error;
 mod history;
 mod models;
 mod shared;
+mod database;
 
 pub use error::{Error, Result};
 
@@ -42,7 +45,7 @@ impl<R: Runtime, T: Manager<R>> crate::ShionHistoryExt<R> for T {
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("shion-history")
-        .invoke_handler(tauri::generate_handler![commands::get_config])
+        .invoke_handler(tauri::generate_handler![commands::get_config, commands::read_history])
         .setup(|app, api| {
             #[cfg(mobile)]
             let shion_history = mobile::init(app, api)?;

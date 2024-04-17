@@ -307,6 +307,20 @@
           "enum": [
             "deny-get-config"
           ]
+        },
+        {
+          "description": "allow-read-history -> Enables the read_history command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-read-history"
+          ]
+        },
+        {
+          "description": "deny-read-history -> Denies the read_history command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-read-history"
+          ]
         }
       ]
     }
