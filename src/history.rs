@@ -1,7 +1,7 @@
 use home::home_dir;
 use lazy_static::lazy_static;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 enum Platform {
     Windows,
     Mac,
@@ -9,9 +9,10 @@ enum Platform {
     Unknown,
 }
 
-struct Database {
+#[derive(Clone)]
+pub struct Database {
     platform: Platform,
-    name: &'static str,
+    pub name: &'static str,
     pattern: String,
 }
 
@@ -52,6 +53,10 @@ fn get_platform() -> Platform {
         "linux" => Platform::Linux,
         _ => Platform::Unknown,
     }
+}
+
+pub fn get_database_list() -> Vec<Database> {
+    DATABASE_LIST.to_vec()
 }
 
 fn get_list() -> Vec<String> {
