@@ -31,3 +31,14 @@ pub(crate) async fn read_history<R: Runtime>(
     }
     Ok(result)
 }
+
+#[command]
+pub(crate) async fn set_config<R: Runtime>(
+    _app: AppHandle<R>,
+    _window: Window<R>,
+    state: State<'_, MyState>,
+    config: InnerConfig
+) -> Result<()> {
+    state.0.set_config(config);
+    Ok(())
+}

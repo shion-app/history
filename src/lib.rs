@@ -45,7 +45,7 @@ impl<R: Runtime, T: Manager<R>> crate::ShionHistoryExt<R> for T {
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("shion-history")
-        .invoke_handler(tauri::generate_handler![commands::get_config, commands::read_history])
+        .invoke_handler(tauri::generate_handler![commands::get_config, commands::read_history, commands::set_config])
         .setup(|app, api| {
             #[cfg(mobile)]
             let shion_history = mobile::init(app, api)?;

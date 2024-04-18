@@ -863,6 +863,13 @@
           ]
         },
         {
+          "description": "shion-history:allow-set-config -> Enables the set_config command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "shion-history:allow-set-config"
+          ]
+        },
+        {
           "description": "shion-history:deny-get-config -> Denies the get_config command without any pre-configured scope.",
           "type": "string",
           "enum": [
@@ -874,6 +881,13 @@
           "type": "string",
           "enum": [
             "shion-history:deny-read-history"
+          ]
+        },
+        {
+          "description": "shion-history:deny-set-config -> Denies the set_config command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "shion-history:deny-set-config"
           ]
         },
         {

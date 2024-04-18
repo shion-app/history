@@ -321,6 +321,20 @@
           "enum": [
             "deny-read-history"
           ]
+        },
+        {
+          "description": "allow-set-config -> Enables the set_config command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "allow-set-config"
+          ]
+        },
+        {
+          "description": "deny-set-config -> Denies the set_config command without any pre-configured scope.",
+          "type": "string",
+          "enum": [
+            "deny-set-config"
+          ]
         }
       ]
     }

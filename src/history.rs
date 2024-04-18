@@ -91,17 +91,22 @@ pub struct History {
 
 impl History {
     pub fn new<P: AsRef<Path>>(base: P) -> Self {
-        let config = Config::new(&base);
+        let mut config = Config::new(&base);
+        config.init();
         let database = Database::new(base);
         Self { config, database }
     }
 
     pub fn get_config(&self) -> InnerConfig {
-        self.config.list()
+        self.config.get()
     }
 
     pub fn read<P: AsRef<Path>>(&self, name: &str, path: P, start: u64, end: u64) -> Result<Vec<Record>> {
         self.database.read(name, path, start, end)
+    }
+
+    pub fn set_config(&self, config: InnerConfig) {
+        self.config.set(config);
     }
 }
 

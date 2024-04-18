@@ -1,10 +1,11 @@
+use parking_lot::RwLock;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{
     fs::{self, File},
-    path::{Path, PathBuf},
+    path::{Path, PathBuf}
 };
 
-use crate::{history, shared::Browser, Error};
+use crate::{history::{self, get_database_list, BrowserDatabase}, shared::Browser, Error};
 
 fn read_file<P, T>(path: P) -> Result<T, Error>
 where
@@ -33,7 +34,7 @@ where
 #[derive(Default)]
 pub struct Config {
     path: PathBuf,
-    inner: InnerConfig,
+    inner: RwLock<InnerConfig>,
 }
 
 #[derive(Deserialize, Serialize, Default, Clone)]
@@ -47,18 +48,28 @@ impl Config {
         let mut path = PathBuf::new();
         path.push(base);
         path.push("plugins/history/config.json");
-        config.path = path.clone();
-        if !path.exists() {
-            config.create()
-        }
-        config.load();
+        config.path = path;
         config
+    }
+
+    pub fn init(&mut self) {
+        if !self.path.exists() {
+            self.create()
+        }
+        self.load();
     }
 
     fn load(&mut self) {
         let config: Result<InnerConfig, Error> = read_file(&self.path);
-        if let Ok(config) = config {
-            self.inner = config
+        if let Ok(mut config) = config {
+            let list = get_database_list();
+            for BrowserDatabase { name, .. } in list {
+                let browser = config.browsers.iter().position(|b| b.name == name);
+                if browser.is_none() {
+                    config.browsers.push(Browser { name: name.to_string(), last_sync: 0 })
+                }
+            }            
+            self.set(config);
         }
     }
 
@@ -74,8 +85,18 @@ impl Config {
         let _ = create_file(&self.path, &config);
     }
 
-    pub fn list(&self) -> InnerConfig {
-        self.inner.clone()
+    pub fn get(&self) -> InnerConfig {
+        self.inner.read().clone()
+    }
+
+    pub fn set(&self, config: InnerConfig) {
+        let mut c = self.inner.write();
+        *c = config.clone();
+        self.save(config);
+    }
+
+    fn save(&self, config: InnerConfig) {
+        let _ = create_file(&self.path, &config);
     }
 }
 
@@ -85,6 +106,14 @@ mod tests {
 
     #[test]
     fn test_config() {
-        Config::new(std::env::current_dir().unwrap());
+        let mut config = Config::new(std::env::current_dir().unwrap());
+        config.init();
+    }
+
+    #[test]
+    fn test_set_config() {
+        let mut config = Config::new(std::env::current_dir().unwrap());
+        config.init();
+        config.set(InnerConfig { browsers: vec![Browser { name: "123".to_string(), last_sync: 0 }] });
     }
 }

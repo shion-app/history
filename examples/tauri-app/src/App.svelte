@@ -1,6 +1,6 @@
 <script>
   import Greet from './lib/Greet.svelte'
-  import { getConfig, readHistory } from 'tauri-plugin-shion-history-api'
+  import { getConfig, readHistory, setConfig } from 'tauri-plugin-shion-history-api'
 
 	let response = ''
 
@@ -12,6 +12,15 @@
 		console.log(await getConfig());
 		console.log(await readHistory(["Microsoft Edge"], 1713283200000, 1713330000000));
 	}
+
+  async function set() {
+    const config = await getConfig()
+    config.browsers = config.browsers.map(i => ({
+      ...i,
+      last_sync: new Date().getTime()
+    }))
+    await setConfig(config)
+  }
 </script>
 
 <main class="container">
@@ -39,6 +48,7 @@
 
   <div>
     <button on:click="{_execute}">Execute</button>
+    <button on:click="{set}">set</button>
     <div>{@html response}</div>
   </div>
 

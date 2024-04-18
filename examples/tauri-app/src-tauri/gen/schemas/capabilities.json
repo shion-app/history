@@ -1,1 +1,1 @@
-{"main-capability":{"identifier":"main-capability","description":"Capability for the main window","local":true,"windows":["main"],"permissions":["shion-history:allow-get-config","shion-history:allow-read-history"]}}
+{"main-capability":{"identifier":"main-capability","description":"Capability for the main window","local":true,"windows":["main"],"permissions":["shion-history:allow-get-config","shion-history:allow-read-history","shion-history:allow-set-config"]}}
