@@ -57,11 +57,11 @@ struct Chromium;
 impl Browse for Chromium {
     fn read(&self, connection: Connection, start: u64, end: u64) -> rusqlite::Result<Vec<Record>> {
         let start = (start / 1000 + 11644473600) * 1000000;
-        let end: u64 = (end / 1000 + 11644473600) * 1000000;
+        let end = (end / 1000 + 11644473600) * 1000000;
         let mut stmt = connection.prepare(
             "SELECT title,
                     url,
-                    (last_visit_time / 1000000 - 11644473600) * 1000 AS last_visited
+                    CAST((last_visit_time / 1000000.0 - 11644473600) * 1000 AS INTEGER) AS last_visited
                 FROM urls
                 WHERE last_visit_time > ? AND last_visit_time < ?;",
         )?;
