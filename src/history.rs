@@ -39,6 +39,11 @@ lazy_static! {
                     name: "Microsoft Edge",
                     pattern: "AppData/Local/Microsoft/Edge/User Data/*/History".to_string(),
                 },
+                BrowserDatabase {
+                    platform: Platform::Windows,
+                    name: "Firefox",
+                    pattern: "AppData/Roaming/Mozilla/Firefox/Profiles/*/places.sqlite".to_string(),
+                },
             ]
             .into_iter()
             .map(|d| BrowserDatabase {

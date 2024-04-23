@@ -44,6 +44,7 @@ pub struct Record {
 fn get_browser(name: &str) -> Box<dyn Browse> {
     match name {
         "Google Chrome" | "Microsoft Edge" => Box::new(Chromium),
+        "Firefox" => Box::new(Firefox),
         _ => Box::new(UnknownBrowser)
     }
 }
@@ -76,6 +77,36 @@ impl Browse for Chromium {
     }
 }
 
+struct Firefox;
+
+impl Browse for Firefox {
+    fn read(&self, connection: Connection, start: u64, end: u64) -> rusqlite::Result<Vec<Record>> {
+        let start = start * 1000;
+        let end = end * 1000;
+        let mut stmt = connection.prepare(
+            "SELECT ifnull(p.title, '') AS title,
+                    p.url,
+                    h.visit_date / 1000 AS last_visited
+                FROM moz_places p,
+                    moz_historyvisits h
+                WHERE p.id = h.place_id AND 
+                    visit_date > ? AND 
+                    visit_date < ?;
+                ",
+        )?;
+        let rows = stmt.query_map([start, end], |row| {
+            Ok(Record {
+                title: row.get(0)?,
+                url: row.get(1)?,
+                last_visited: row.get(2)?,
+            })
+        })?;
+        rows.collect()
+    }
+}
+
+
+
 struct UnknownBrowser;
 
 impl Browse for UnknownBrowser {
@@ -97,6 +128,16 @@ mod tests {
         let dir = home_dir().unwrap();
         let path = dir.join("AppData/Local/Microsoft/Edge/User Data/Default/History");
         let databse = Database::new(current_dir().unwrap());
-        let _ = databse.read("Microsoft Edge", path, 1713283200000, 1713330000000);
+        let result = databse.read("Microsoft Edge", path, 1713283200000, 1713330000000);
+        println!("{:#?}", result);
+    }
+
+    #[test]
+    fn test_get_firefox_records() {
+        let dir = home_dir().unwrap();
+        let path = dir.join("AppData/Roaming/Mozilla/Firefox/Profiles/g0ogiynj.default-release/places.sqlite");
+        let databse = Database::new(current_dir().unwrap());
+        let result = databse.read("Firefox", path, 1713744000000, 1713836157169);
+        println!("{:#?}", result);
     }
 }
