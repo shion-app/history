@@ -25,9 +25,9 @@ export async function setConfig(config: Config) {
   })
 }
 
-export async function readHistory(list: Array<string>, start: number, end: number) {
+export async function readHistory(name: string, start: number, end: number) {
   return await invoke<Array<History>>('plugin:shion-history|read_history', {
-    list,
+    name,
     start,
     end
   })
