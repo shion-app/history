@@ -1,15 +1,15 @@
 import { invoke } from '@tauri-apps/api/core'
 
-interface Browser {
+export interface Browser {
   name: string,
   last_sync: number,
 }
 
-interface Config {
+export interface Config {
   browsers: Array<Browser>
 }
 
-interface History {
+export interface History {
   title: string,
   url: string,
   last_visited: number,

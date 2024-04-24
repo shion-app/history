@@ -1,11 +1,11 @@
-interface Browser {
+export interface Browser {
     name: string;
     last_sync: number;
 }
-interface Config {
+export interface Config {
     browsers: Array<Browser>;
 }
-interface History {
+export interface History {
     title: string;
     url: string;
     last_visited: number;
@@ -13,4 +13,3 @@ interface History {
 export declare function getConfig(): Promise<Config>;
 export declare function setConfig(config: Config): Promise<unknown>;
 export declare function readHistory(list: Array<string>, start: number, end: number): Promise<History[]>;
-export {};
