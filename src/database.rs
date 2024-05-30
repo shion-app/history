@@ -1,8 +1,11 @@
-use std::{fmt::Debug, fs, path::{Path, PathBuf}};
+use std::{
+    fmt::Debug,
+    fs,
+    path::{Path, PathBuf},
+};
 
-use rusqlite::{Connection};
+use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
-
 
 use crate::Result;
 
@@ -17,7 +20,13 @@ impl Database {
         Database { base: path }
     }
 
-    pub fn read<P: AsRef<Path>>(&self, name: &str, path: P, start: u64, end: u64) -> Result<Vec<Record>> {
+    pub fn read<P: AsRef<Path>>(
+        &self,
+        name: &str,
+        path: P,
+        start: u64,
+        end: u64,
+    ) -> Result<Vec<Record>> {
         let temp_path = self.base.join("plugins/history/temp/data.db");
         if let Some(parent_dir) = temp_path.parent() {
             if !parent_dir.exists() {
@@ -27,11 +36,15 @@ impl Database {
         fs::copy(path, &temp_path)?;
         let connection = Connection::open(&temp_path)?;
         let browser = get_browser(name);
-        let result = browser.read(connection, start, end)?;
+        let valid = browser.check(&connection)?;
+        let result = if valid {
+            browser.read(connection, start, end)?
+        } else {
+            vec![]
+        };
         fs::remove_file(temp_path)?;
         Ok(result)
     }
-
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -41,16 +54,21 @@ pub struct Record {
     last_visited: u64,
 }
 
+struct Table {
+    name: String,
+}
+
 fn get_browser(name: &str) -> Box<dyn Browse> {
     match name {
         "Google Chrome" | "Microsoft Edge" => Box::new(Chromium),
         "Firefox" => Box::new(Firefox),
-        _ => Box::new(UnknownBrowser)
+        _ => Box::new(UnknownBrowser),
     }
 }
 
 trait Browse {
     fn read(&self, connection: Connection, start: u64, end: u64) -> rusqlite::Result<Vec<Record>>;
+    fn check(&self, connection: &Connection) -> rusqlite::Result<bool>;
 }
 
 struct Chromium;
@@ -74,6 +92,20 @@ impl Browse for Chromium {
             })
         })?;
         rows.collect()
+    }
+
+    fn check(&self, connection: &Connection) -> rusqlite::Result<bool> {
+        let mut stmt = connection.prepare(
+            "SELECT *
+                FROM sqlite_master
+                WHERE type = 'table' AND 
+                    name = 'urls';
+                ",
+        )?;
+        let rows = stmt
+            .query_map([], |row| Ok(Table { name: row.get(0)? }))?
+            .collect::<Vec<_>>();
+        Ok(rows.len() == 1)
     }
 }
 
@@ -103,18 +135,39 @@ impl Browse for Firefox {
         })?;
         rows.collect()
     }
+
+    fn check(&self, connection: &Connection) -> rusqlite::Result<bool> {
+        let mut stmt = connection.prepare(
+            "SELECT name
+                FROM sqlite_master
+                WHERE type = 'table' AND 
+                    name = 'moz_places' OR 
+                    name = 'moz_historyvisits';
+                ",
+        )?;
+        let rows = stmt
+            .query_map([], |row| Ok(Table { name: row.get(0)? }))?
+            .collect::<Vec<_>>();
+        Ok(rows.len() == 2)
+    }
 }
-
-
 
 struct UnknownBrowser;
 
 impl Browse for UnknownBrowser {
-    fn read(&self, _connection: Connection, _start: u64, _end: u64) -> rusqlite::Result<Vec<Record>> {
+    fn read(
+        &self,
+        _connection: Connection,
+        _start: u64,
+        _end: u64,
+    ) -> rusqlite::Result<Vec<Record>> {
         Ok(vec![])
     }
-}
 
+    fn check(&self, _connection: &Connection) -> rusqlite::Result<bool> {
+        Ok(false)
+    }
+}
 
 mod tests {
     use std::env::current_dir;
