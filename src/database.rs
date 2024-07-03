@@ -4,6 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use anyhow::anyhow;
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 
@@ -33,8 +34,10 @@ impl Database {
                 fs::create_dir_all(parent_dir)?;
             }
         }
-        fs::copy(path, &temp_path)?;
-        let connection = Connection::open(&temp_path)?;
+        fs::copy(path, &temp_path).map_err(|e| anyhow!("copy file error: {}", e))?;
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        let connection =
+            Connection::open(&temp_path).map_err(|e| anyhow!("connection error: {}", e))?;
         let browser = get_browser(name);
         let valid = browser.check(&connection)?;
         let result = if valid {
@@ -42,7 +45,7 @@ impl Database {
         } else {
             vec![]
         };
-        fs::remove_file(temp_path)?;
+        fs::remove_file(temp_path).map_err(|e| anyhow!("remove file error: {}", e))?;
         Ok(result)
     }
 }
