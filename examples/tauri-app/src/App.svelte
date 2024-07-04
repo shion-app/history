@@ -10,7 +10,7 @@
 
 	async function _execute() {
 		console.log(await getConfig());
-		console.log(await readHistory(["Microsoft Edge"], 1713283200000, 1713330000000));
+		console.log(await readHistory("Microsoft Edge", 1713283200000, 1713330000000));
 	}
 
   async function set() {

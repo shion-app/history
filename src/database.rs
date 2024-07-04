@@ -1,12 +1,13 @@
 use std::{
     fmt::Debug,
     fs,
+    io::Write,
     path::{Path, PathBuf},
 };
 
-use anyhow::anyhow;
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
+use tempfile::NamedTempFile;
 
 use crate::Result;
 
@@ -28,16 +29,11 @@ impl Database {
         start: u64,
         end: u64,
     ) -> Result<Vec<Record>> {
-        let temp_path = self.base.join("plugins/history/temp/data.db");
-        if let Some(parent_dir) = temp_path.parent() {
-            if !parent_dir.exists() {
-                fs::create_dir_all(parent_dir)?;
-            }
-        }
-        fs::copy(path, &temp_path).map_err(|e| anyhow!("copy file error: {}", e))?;
-        std::thread::sleep(std::time::Duration::from_millis(100));
-        let connection =
-            Connection::open(&temp_path).map_err(|e| anyhow!("connection error: {}", e))?;
+        let mut temp_file = NamedTempFile::new()?;
+        let buffer = fs::read(path)?;
+        temp_file.write_all(&buffer)?;
+        let temp_path = temp_file.path();
+        let connection = Connection::open(&temp_path)?;
         let browser = get_browser(name);
         let valid = browser.check(&connection)?;
         let result = if valid {
@@ -45,7 +41,6 @@ impl Database {
         } else {
             vec![]
         };
-        fs::remove_file(temp_path).map_err(|e| anyhow!("remove file error: {}", e))?;
         Ok(result)
     }
 }
@@ -191,7 +186,9 @@ mod tests {
     #[test]
     fn test_get_firefox_records() {
         let dir = home_dir().unwrap();
-        let path = dir.join("AppData/Roaming/Mozilla/Firefox/Profiles/g0ogiynj.default-release/places.sqlite");
+        let path = dir.join(
+            "AppData/Roaming/Mozilla/Firefox/Profiles/g0ogiynj.default-release/places.sqlite",
+        );
         let databse = Database::new(current_dir().unwrap());
         let result = databse.read("Firefox", path, 1713744000000, 1713836157169);
         println!("{:#?}", result);

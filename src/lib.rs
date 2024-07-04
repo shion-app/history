@@ -23,6 +23,9 @@ mod database;
 
 pub use error::{Error, Result};
 
+#[macro_use]
+extern crate log;
+
 #[cfg(desktop)]
 use desktop::ShionHistory;
 #[cfg(mobile)]

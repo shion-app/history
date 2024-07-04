@@ -24,8 +24,14 @@ pub(crate) async fn read_history<R: Runtime>(
     let mut result = vec![];
     let database_path_list = map.get(&name.as_str()).unwrap_or(&vec![]).clone();
     for path in database_path_list {
-        let mut list = state.0.read(&name, path, start, end)?;
-        result.append(&mut list);
+        match state.0.read(&name, path.clone(), start, end) {
+            Ok(mut list) => {
+                result.append(&mut list);
+            }
+            Err(err) => {
+                error!("read history error: {}, path: {}", err, path);
+            }
+        }
     }
     Ok(result)
 }
@@ -35,7 +41,7 @@ pub(crate) async fn set_config<R: Runtime>(
     _app: AppHandle<R>,
     _window: Window<R>,
     state: State<'_, MyState>,
-    config: InnerConfig
+    config: InnerConfig,
 ) -> Result<()> {
     state.0.set_config(config);
     Ok(())
