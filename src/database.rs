@@ -33,6 +33,7 @@ impl Database {
         let buffer = fs::read(path)?;
         temp_file.write_all(&buffer)?;
         let temp_path = temp_file.path();
+        debug!("temp file path: {:?}", temp_path);
         let connection = Connection::open(&temp_path)?;
         let browser = get_browser(name);
         let valid = browser.check(&connection)?;
