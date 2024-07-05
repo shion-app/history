@@ -1,23 +1,30 @@
 use std::{
     fmt::Debug,
     fs,
+    io::Write,
     path::{Path, PathBuf},
 };
 
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
+use tempfile::Builder;
 
 use crate::Result;
 
 pub struct Database {
-    base: PathBuf,
+    temp_dir: PathBuf,
 }
 
 impl Database {
     pub fn new<P: AsRef<Path>>(base: P) -> Self {
-        let mut path = PathBuf::new();
-        path.push(base);
-        Database { base: path }
+        let path = base.as_ref();
+        let temp_dir = path.join("temp");
+        Database { temp_dir }
+    }
+
+    pub fn clean_temp(&self) {
+        let _ = fs::remove_dir_all(&self.temp_dir);
+        let _ = fs::create_dir_all(&self.temp_dir);
     }
 
     pub fn read<P: AsRef<Path>>(
@@ -27,13 +34,10 @@ impl Database {
         start: u64,
         end: u64,
     ) -> Result<Vec<Record>> {
-        let temp_path = self.base.join("plugins/history/temp/data.db");
-        if let Some(parent_dir) = temp_path.parent() {
-            if !parent_dir.exists() {
-                fs::create_dir_all(parent_dir)?;
-            }
-        }
-        fs::copy(path, &temp_path)?;
+        let mut temp_file = Builder::new().tempfile_in(&self.temp_dir)?;
+        let buffer = fs::read(path)?;
+        temp_file.write_all(&buffer)?;
+        let temp_path = temp_file.path();
         let connection = Connection::open(&temp_path)?;
         let browser = get_browser(name);
         let valid = browser.check(&connection)?;
@@ -42,7 +46,6 @@ impl Database {
         } else {
             vec![]
         };
-        fs::remove_file(temp_path)?;
         Ok(result)
     }
 }
@@ -180,7 +183,8 @@ mod tests {
     fn test_get_edge_records() {
         let dir = home_dir().unwrap();
         let path = dir.join("AppData/Local/Microsoft/Edge/User Data/Default/History");
-        let databse = Database::new(current_dir().unwrap());
+        let base = current_dir().unwrap().join("plugins/history");
+        let databse = Database::new(base);
         let result = databse.read("Microsoft Edge", path, 1713283200000, 1713330000000);
         println!("{:#?}", result);
     }
@@ -188,8 +192,11 @@ mod tests {
     #[test]
     fn test_get_firefox_records() {
         let dir = home_dir().unwrap();
-        let path = dir.join("AppData/Roaming/Mozilla/Firefox/Profiles/g0ogiynj.default-release/places.sqlite");
-        let databse = Database::new(current_dir().unwrap());
+        let path = dir.join(
+            "AppData/Roaming/Mozilla/Firefox/Profiles/g0ogiynj.default-release/places.sqlite",
+        );
+        let base = current_dir().unwrap().join("plugins/history");
+        let databse = Database::new(base);
         let result = databse.read("Firefox", path, 1713744000000, 1713836157169);
         println!("{:#?}", result);
     }

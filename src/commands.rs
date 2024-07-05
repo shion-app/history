@@ -23,8 +23,10 @@ pub(crate) async fn read_history<R: Runtime>(
     let map = history::get_database_map();
     let mut result = vec![];
     let database_path_list = map.get(&name.as_str()).unwrap_or(&vec![]).clone();
+    let history = &state.0;
+    history.clean_temp();
     for path in database_path_list {
-        let mut list = state.0.read(&name, path, start, end)?;
+        let mut list = history.read(&name, path, start, end)?;
         result.append(&mut list);
     }
     Ok(result)

@@ -6,7 +6,7 @@ use lazy_static::lazy_static;
 use crate::{
     config::{Config, InnerConfig},
     database::{Database, Record},
-    Result
+    Result,
 };
 
 #[derive(PartialEq, Clone)]
@@ -96,6 +96,8 @@ pub struct History {
 
 impl History {
     pub fn new<P: AsRef<Path>>(base: P) -> Self {
+        let base = base.as_ref();
+        let base = base.join("plugins/history");
         let mut config = Config::new(&base);
         config.init();
         let database = Database::new(base);
@@ -106,12 +108,22 @@ impl History {
         self.config.get()
     }
 
-    pub fn read<P: AsRef<Path>>(&self, name: &str, path: P, start: u64, end: u64) -> Result<Vec<Record>> {
+    pub fn read<P: AsRef<Path>>(
+        &self,
+        name: &str,
+        path: P,
+        start: u64,
+        end: u64,
+    ) -> Result<Vec<Record>> {
         self.database.read(name, path, start, end)
     }
 
     pub fn set_config(&self, config: InnerConfig) {
         self.config.set(config);
+    }
+
+    pub fn clean_temp(&self) {
+        self.database.clean_temp();
     }
 }
 

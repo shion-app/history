@@ -45,10 +45,8 @@ pub struct InnerConfig {
 impl Config {
     pub fn new<P: AsRef<Path>>(base: P) -> Self {
         let mut config = Config::default();
-        let mut path = PathBuf::new();
-        path.push(base);
-        path.push("plugins/history/config.json");
-        config.path = path;
+        let path = base.as_ref();
+        config.path = path.join("config.json");
         config
     }
 
