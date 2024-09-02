@@ -63,7 +63,7 @@ struct Table {
 
 fn get_browser(name: &str) -> Box<dyn Browse> {
     match name {
-        "Google Chrome" | "Microsoft Edge" => Box::new(Chromium),
+        "Google Chrome" | "Microsoft Edge" | "Arc" => Box::new(Chromium),
         "Firefox" => Box::new(Firefox),
         _ => Box::new(UnknownBrowser),
     }
@@ -198,6 +198,18 @@ mod tests {
         let base = current_dir().unwrap().join("plugins/history");
         let databse = Database::new(base);
         let result = databse.read("Firefox", path, 1713744000000, 1713836157169);
+        println!("{:#?}", result);
+    }
+
+    #[test]
+    fn test_get_arc_records() {
+        let dir = home_dir().unwrap();
+        let path = dir.join(
+            "AppData/Local/Packages/TheBrowserCompany.Arc_ttt1ap7aakyb4/LocalCache/Local/Arc/User Data/Default/History",
+        );
+        let base = current_dir().unwrap().join("plugins/history");
+        let databse = Database::new(base);
+        let result = databse.read("Arc", path, 1725194649777, 1725281019344);
         println!("{:#?}", result);
     }
 }

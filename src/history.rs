@@ -44,6 +44,11 @@ lazy_static! {
                     name: "Firefox",
                     pattern: "AppData/Roaming/Mozilla/Firefox/Profiles/*/places.sqlite".to_string(),
                 },
+                BrowserDatabase {
+                    platform: Platform::Windows,
+                    name: "Arc",
+                    pattern: "AppData/Local/Packages/TheBrowserCompany.Arc_ttt1ap7aakyb4/LocalCache/Local/Arc/User Data/*/History".to_string(),
+                },
             ]
             .into_iter()
             .map(|d| BrowserDatabase {
